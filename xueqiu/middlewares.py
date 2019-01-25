@@ -6,6 +6,14 @@
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+import scrapy
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+import time
 
 
 class XueqiuSpiderMiddleware(object):
@@ -101,3 +109,39 @@ class XueqiuDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+
+class AreaSpiderMiddleware(object):
+     
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        chrome_options = Options()
+        #chrome_options.add_argument('--headless')  # 使用无头谷歌浏览器模式
+        #chrome_options.add_argument('--disable-gpu')
+        #chrome_options.add_argument('--no-sandbox')        
+        
+        # 指定谷歌浏览器路径
+        self.driver = webdriver.Chrome()
+        
+    
+    #----------------------------------------------------------------------
+    def __del__(self):
+        """"""
+        self.driver.close()
+        
+    
+    
+    def process_request(self, request, spider): 
+        
+        try:
+            self.driver.get(request.url)
+            #self.driver.implicitly_wait(10)
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"sortable")))
+            #time.sleep(10)
+            html = self.driver.page_source
+            
+            return scrapy.http.HtmlResponse(url=request.url, body=html.encode('utf-8'), encoding='utf-8',request=request)
+        except TimeoutException:
+            return scrapy.http.HtmlResponse(url=request.url, request=request, encoding='utf-8', status=500)        

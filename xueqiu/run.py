@@ -9,5 +9,6 @@ from scrapy.utils.project import get_project_settings
 process = CrawlerProcess(get_project_settings())
 
 # 'followall' is the name of one of the spiders of the project.
-process.crawl('xueqiu', domain='www.xueqiu.com')
+process.crawl('xueqiuSubject', domain='www.xueqiu.com')
+#process.crawl('xueqiu', domain='www.xueqiu.com')
 process.start() # the script will block here until the crawling is finished

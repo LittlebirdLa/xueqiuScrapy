@@ -6,7 +6,7 @@ from xueqiu.items import  XueqiuItem
 
 
 class XueQiuSpider(scrapy.spiders.Spider):
-    name = 'xueqiu'
+    name = 'xueqiuMainFinance'
     allowed_domains = ['xueqiu.com']
     start_urls = ['https://stock.xueqiu.com/v5/stock/f10/cn/company.json?symbol=SZ000333',
               'https://stock.xueqiu.com/v5/stock/f10/cn/company.json?symbol=SZ000568']
