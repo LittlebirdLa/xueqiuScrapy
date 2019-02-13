@@ -38,3 +38,23 @@ class SubjectItem(scrapy.Item):
     #股票链接
     stock_url=scrapy.Field()
     pass
+
+
+########################################################################
+class DataItem(scrapy.Item):
+    """收集表格数据"""
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    #股票名称
+    stock_name=scrapy.Field()
+    #股票代码
+    stock_symbol=scrapy.Field()
+    #表格名称
+    table_name=scrapy.Field()
+    #表格数据
+    data=scrapy.Field()
+    pass
+        
+        
+    
+    

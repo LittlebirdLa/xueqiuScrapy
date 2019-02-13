@@ -5,11 +5,15 @@ import json
 from xueqiu.items import  XueqiuItem
 
 
-class XueQiuSpider(scrapy.spiders.Spider):
-    name = 'xueqiuMainFinance'
+class XueQiuDataSpider(scrapy.spiders.Spider):
+    name = 'xueqiuData'
     allowed_domains = ['xueqiu.com']
-    start_urls = ['https://stock.xueqiu.com/v5/stock/f10/cn/company.json?symbol=SZ000333',
-              'https://stock.xueqiu.com/v5/stock/f10/cn/company.json?symbol=SZ000568']
+    general_urls = {'zyzb':'https://stock.xueqiu.com/v5/stock/finance/cn/indicator.json?symbol=%s&type=all&is_detail=true&count=60',
+                    'lrb':'https://stock.xueqiu.com/v5/stock/finance/cn/income.json?symbol=%s&type=all&is_detail=true&count=60',
+                    'zcfzb':'https://stock.xueqiu.com/v5/stock/finance/cn/balance.json?symbol=%s&type=all&is_detail=true&count=60',
+                    'xjllb':'https://stock.xueqiu.com/v5/stock/finance/cn/cash_flow.json?symbol=%s&type=all&is_detail=true&count=60'
+                    }
+              
     headers = {
        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
         "Accept-Encoding": "gzip, deflate, br",
@@ -23,26 +27,27 @@ class XueQiuSpider(scrapy.spiders.Spider):
     }
  
     custom_settings = {'ITEM_PIPELINES': {'xueqiu.pipelines.XueqiuPipeline': 400}} 
+    
+    
+    subjectData = csv.reader(open("xueqiuSubject.csv"))
 
-    def start_requests(self):        
 
-        for url in self.start_urls:
-            yield scrapy.Request(url,headers = self.headers)
-
+    def start_requests(self): 
+        for symbol,name,url in self.subjectData:
+            if name != "股票名称" :
+                for table,exampUrl in general_urls:
+                    url=exampUrl % symbol
+                    myMeta={'stock_name':name,'stock_symbol':symbol,'stock_table':table}
+                    yield scrapy.Request(url,meta=myMeta,headers = self.headers,dont_filter=True) 
         
-    def parse(self,response):
+    def parse(self,response,need):
         item=XueqiuItem()
         Info=json.loads(response.body)
         url=response.url
-        
-        item['stock_code']=url[-6:]
-        item['SH_SZ']=url[-8:-6]
-        item['org_name_cn']=Info['data']['company']['org_name_cn']
-        item['main_operation_business']=Info['data']['company']['main_operation_business']
-        item['org_cn_introduction']=Info['data']['company']['org_cn_introduction']
-        item['postcode']=Info['data']['company']['postcode']
-        item['org_website']=Info['data']['company']['org_website']
-        
+        item['data']=Info['data']['list'] 
+        item['stock_name']=response.meta['stock_name']
+        item['stock_symbol']=response.meta['stock_symbol']
+        item['stock_table']=response.meta['stock_table']
         return item
-  
+
 
